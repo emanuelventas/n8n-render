@@ -1,0 +1,33 @@
+
+ const venom = require('venom-bot');
+require('dotenv').config();
+const axios = require('axios');
+
+venom
+  .create({
+    session: 'bot-n8n',
+    multidevice: true,
+  })
+  .then((client) => start(client))
+  .catch((err) => {
+    console.error('Error al iniciar sesión:', err);
+  });
+
+function start(client) {
+  client.onMessage(async (message) => {
+    if (message.body && message.isGroupMsg === false) {
+      console.log('📩 Mensaje recibido:', message.body);
+
+      try {
+        await axios.post(process.env.WEBHOOK_URL, {
+          nombre: message.notifyName || '',
+          mensaje: message.body,
+          telefono: message.from,
+        });
+        console.log('✅ Enviado a n8n exitosamente');
+      } catch (error) {
+        console.error('❌ Error al enviar a n8n:', error.message);
+      }
+    }
+  });
+}
